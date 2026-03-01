@@ -3,26 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediScan - QR Scanner</title>
+    <title>MediScan - Prescription System</title>
     <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
     <div class="app">
-        <video id="camera" autoplay playsinline></video>
-        <canvas id="canvas" class="hidden"></canvas>
-        
-        <div class="scanner-overlay">
-            <div class="scan-box"></div>
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="scanner">Scanner</button>
+            <button class="nav-tab" data-tab="inventory">Inventory</button>
+            <button class="nav-tab" data-tab="patients">Patients</button>
+            <button class="nav-tab" data-tab="reports">Reports</button>
+            <button class="nav-tab" data-tab="surveillance">Surveillance</button>
+        </nav>
+
+        <!-- Scanner Tab -->
+        <div id="scanner" class="tab-content active">
+            <div class="scanner-container">
+                <h2>Prescription Scanner</h2>
+                <div class="scanner-modes">
+                    <button id="cameraBtn" class="mode-btn active">📸 Camera</button>
+                    <button id="uploadBtn" class="mode-btn">📄 Upload</button>
+                </div>
+                
+                <video id="camera" class="camera-feed"></video>
+                <input type="file" id="fileInput" class="hidden" accept="image/*">
+                <canvas id="canvas" class="hidden"></canvas>
+
+                <div class="scanner-controls">
+                    <button id="captureBtn" class="btn-primary">Scan Prescription</button>
+                </div>
+
+                <div id="ocrResult" class="ocr-result hidden">
+                    <h3>Extracted Information</h3>
+                    <textarea id="extractedText" readonly></textarea>
+                    <div class="result-actions">
+                        <button id="confirmBtn" class="btn-primary">Add to Patient Record</button>
+                        <button id="clearBtn" class="btn-secondary">Clear & Rescan</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="result" class="result hidden">
-            <h2>Scanned Result</h2>
-            <p id="resultText"></p>
-            <button id="scanAgainBtn">Scan Again</button>
+        <!-- Inventory Tab -->
+        <div id="inventory" class="tab-content">
+            <h2>Medicine Inventory</h2>
+            <div class="inventory-header">
+                <input type="text" id="medicineSearch" placeholder="Search medicines...">
+                <button id="addMedicineBtn" class="btn-primary">+ Add Medicine</button>
+            </div>
+            <div id="medicineList" class="medicine-list"></div>
+        </div>
+
+        <!-- Patients Tab -->
+        <div id="patients" class="tab-content">
+            <h2>Patient Records</h2>
+            <div class="patients-header">
+                <input type="text" id="patientSearch" placeholder="Search patients...">
+            </div>
+            <div id="patientList" class="patient-list"></div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <h2>Consumption & Forecasting Reports</h2>
+            <div class="reports-container">
+                <div class="report-card">
+                    <h3>Top 10 Most Requested Medicines</h3>
+                    <div id="topMedicines" class="chart-placeholder"></div>
+                </div>
+                <div class="report-card">
+                    <h3>Stock Reorder Recommendations</h3>
+                    <div id="restockList" class="restock-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Surveillance Tab -->
+        <div id="surveillance" class="tab-content">
+            <h2>Syndromic Surveillance - Outbreak Detection</h2>
+            <div class="surveillance-container">
+                <div class="alert-card" id="alertCard"></div>
+                <div class="report-card">
+                    <h3>Medicine Demand Trends (Last 7 Days)</h3>
+                    <div id="trendChart" class="chart-placeholder"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <!-- Modals -->
+    <div id="addMedicineModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Add New Medicine</h3>
+            <input type="text" id="medicineName" placeholder="Medicine Name">
+            <input type="text" id="genericName" placeholder="Generic Equivalent (optional)">
+            <input type="number" id="medicineStock" placeholder="Stock Quantity">
+            <input type="text" id="shelfLocation" placeholder="Shelf Location (e.g., A-5)">
+            <button id="saveMedicineBtn" class="btn-primary">Save</button>
+            <button id="closeMedicineModal" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
