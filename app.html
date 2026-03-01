@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediScan</title>
+    <title>MediScan - QR Scanner</title>
     <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
     <div class="app">
         <video id="camera" autoplay playsinline></video>
         <canvas id="canvas" class="hidden"></canvas>
-        <img id="preview" class="hidden"/>
         
-        <div id="cameraView" class="view active">
-            <button id="captureBtn" class="capture-btn">📸</button>
+        <div class="scanner-overlay">
+            <div class="scan-box"></div>
         </div>
 
-        <div id="previewView" class="view hidden">
-            <button id="retakeBtn" class="btn">Retake</button>
-            <button id="saveBtn" class="btn primary">Save</button>
+        <div id="result" class="result hidden">
+            <h2>Scanned Result</h2>
+            <p id="resultText"></p>
+            <button id="scanAgainBtn">Scan Again</button>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

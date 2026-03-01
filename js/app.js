@@ -1,14 +1,11 @@
 const camera = document.getElementById('camera');
 const canvas = document.getElementById('canvas');
-const preview = document.getElementById('preview');
-const cameraView = document.getElementById('cameraView');
-const previewView = document.getElementById('previewView');
-const captureBtn = document.getElementById('captureBtn');
-const retakeBtn = document.getElementById('retakeBtn');
-const saveBtn = document.getElementById('saveBtn');
+const result = document.getElementById('result');
+const resultText = document.getElementById('resultText');
+const scanAgainBtn = document.getElementById('scanAgainBtn');
 
 let stream;
-let capturedImageData;
+let scanning = true;
 
 async function init() {
     try {
@@ -21,52 +18,55 @@ async function init() {
             audio: false
         });
         camera.srcObject = stream;
+        camera.onloadedmetadata = () => {
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
+            scanQRCode();
+        };
     } catch (error) {
         alert('Unable to access camera');
         console.error(error);
     }
 }
 
-function capture() {
-    const ctx = canvas.getContext('2d');
-    canvas.width = camera.videoWidth;
-    canvas.height = camera.videoHeight;
-    ctx.drawImage(camera, 0, 0);
+function scanQRCode() {
+    if (!scanning) return;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
     
-    capturedImageData = canvas.toDataURL('image/jpeg', 0.9);
-    preview.src = capturedImageData;
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
     
-    camera.style.display = 'none';
-    preview.classList.remove('hidden');
-    cameraView.classList.remove('active');
-    previewView.classList.add('active');
+    if (qrCode) {
+        displayResult(qrCode.data);
+    } else {
+        requestAnimationFrame(scanQRCode);
+    }
 }
 
-function retake() {
-    camera.style.display = 'block';
-    preview.classList.add('hidden');
-    cameraView.classList.add('active');
-    previewView.classList.remove('active');
-}
-
-function save() {
-    const prescription = {
+function displayResult(data) {
+    scanning = false;
+    resultText.textContent = data;
+    result.classList.remove('hidden');
+    
+    // Store in localStorage
+    let codes = JSON.parse(localStorage.getItem('scannedCodes') || '[]');
+    codes.push({
         id: Date.now(),
-        image: capturedImageData,
-        date: new Date().toLocaleDateString()
-    };
-    
-    let prescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
-    prescriptions.push(prescription);
-    localStorage.setItem('prescriptions', JSON.stringify(prescriptions));
-    
-    alert('Prescription saved!');
-    retake();
+        data: data,
+        date: new Date().toLocaleString()
+    });
+    localStorage.setItem('scannedCodes', JSON.stringify(codes));
 }
 
-captureBtn.addEventListener('click', capture);
-retakeBtn.addEventListener('click', retake);
-saveBtn.addEventListener('click', save);
+function scanAgain() {
+    result.classList.add('hidden');
+    scanning = true;
+    scanQRCode();
+}
 
+scanAgainBtn.addEventListener('click', scanAgain);
 init();
+
 
