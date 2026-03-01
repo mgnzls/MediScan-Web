@@ -56,24 +56,75 @@ class MediScanSystem {
     async startCamera() {
         try {
             if (!this.stream) {
+                console.log('Requesting camera access...');
+                const statusDiv = document.getElementById('cameraStatus');
+                if (statusDiv) {
+                    statusDiv.textContent = 'Requesting camera access...';
+                    statusDiv.classList.add('show');
+                }
+
                 this.stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
                 });
+                
                 this.camera.srcObject = this.stream;
+                
+                if (statusDiv) {
+                    statusDiv.textContent = 'Loading camera feed...';
+                }
+
+                // Wait for video to be ready with timeout
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Camera timeout - feed did not initialize'));
+                    }, 5000);
+                    
+                    this.camera.onloadedmetadata = () => {
+                        clearTimeout(timeout);
+                        console.log('Camera ready');
+                        if (statusDiv) statusDiv.classList.remove('show');
+                        resolve();
+                    };
+                });
             }
             this.camera.style.display = 'block';
         } catch (error) {
-            alert('Unable to access camera');
+            console.error('Camera error:', error);
+            const statusDiv = document.getElementById('cameraStatus');
+            if (statusDiv) statusDiv.classList.remove('show');
+            
+            if (error.name === 'NotAllowedError') {
+                alert('Camera permission denied. Please enable camera access in browser settings.');
+            } else if (error.name === 'NotFoundError') {
+                alert('No camera found. Please check your device.');
+            } else {
+                alert('Unable to access camera: ' + error.message);
+            }
         }
     }
 
     async captureImage() {
-        const ctx = this.canvas.getContext('2d');
-        this.canvas.width = this.camera.videoWidth;
-        this.canvas.height = this.camera.videoHeight;
-        ctx.drawImage(this.camera, 0, 0);
-        
-        this.canvas.toBlob(blob => this.processImage(blob));
+        try {
+            if (!this.camera.srcObject || !this.camera.videoWidth) {
+                alert('Camera not ready. Please try again.');
+                return;
+            }
+            
+            const ctx = this.canvas.getContext('2d');
+            this.canvas.width = this.camera.videoWidth;
+            this.canvas.height = this.camera.videoHeight;
+            ctx.drawImage(this.camera, 0, 0);
+            
+            this.canvas.toBlob(blob => this.processImage(blob));
+        } catch (error) {
+            console.error('Capture error:', error);
+            alert('Failed to capture image: ' + error.message);
+        }
     }
 
     processUploadedImage(e) {

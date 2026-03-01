@@ -26,7 +26,10 @@
                     <button id="uploadBtn" class="mode-btn">📄 Upload</button>
                 </div>
                 
-                <video id="camera" class="camera-feed"></video>
+                <div id="cameraSection">
+                    <video id="camera" class="camera-feed" autoplay playsinline muted></video>
+                    <div class="camera-status" id="cameraStatus">Click "Scan Prescription" to enable camera</div>
+                </div>
                 <input type="file" id="fileInput" class="hidden" accept="image/*">
                 <canvas id="canvas" class="hidden"></canvas>
 
